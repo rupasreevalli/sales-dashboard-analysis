@@ -196,7 +196,6 @@ if uploaded_file:
 
 else:
     st.info("Please upload a CSV file to proceed.")
-=======
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -395,4 +394,4 @@ if uploaded_file:
 
 else:
     st.info("Please upload a CSV file to proceed.")
->>>>>>> fe70c9b (Initial commit)
+
