@@ -196,3 +196,61 @@ if uploaded_file:
 
 else:
     st.info("Please upload a CSV file to proceed.")
+# Import necessary libraries
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+
+# Streamlit UI
+st.title("📊 Sales Funnel Analysis")
+
+# Upload CSV file in Streamlit
+uploaded_file = st.file_uploader("Upload your sales data CSV", type=["csv"])
+
+if uploaded_file is not None:
+    # Load dataset
+    data = pd.read_csv(uploaded_file, encoding="ISO-8859-1")
+
+    # Sidebar filter for user selection
+    salespersons = data["Created By"].dropna().unique()
+    selected_user = st.sidebar.selectbox("Select Salesperson", salespersons)
+
+    # Filter dataset for the selected user
+    df_user = data[data["Created By"] == selected_user]
+
+    # Count leads at each stage
+    total_leads = len(df_user)
+    demo_completed = df_user[df_user["DemoStatus"].str.contains("Yes", na=False)].shape[0]
+    quote_sent = df_user[df_user["QuoteSentDate"].notna()].shape[0]
+    won = df_user[df_user["Order Status"].str.contains("Win", na=False)].shape[0]
+
+    # Define funnel stages
+    stages = ["Total Leads", "Demo Completed", "Quote Sent", "Won"]
+    values = [total_leads, demo_completed, quote_sent, won]
+
+    # Create funnel chart
+    fig = go.Figure(go.Funnel(
+        y=stages,
+        x=values,
+        textinfo="value+percent initial",
+        marker={"color": ["blue", "lightblue", "skyblue", "dodgerblue"]}
+    ))
+
+    # Display funnel chart in Streamlit
+    st.plotly_chart(fig)
+
+    # Show conversion percentages
+    st.subheader(f"📊 Sales Funnel Breakdown for {selected_user}")
+    st.write(f"**Total Leads:** {total_leads}")
+    st.write(f"**Demo Completed:** {demo_completed} ({(demo_completed / total_leads * 100):.2f}%)" if total_leads > 0 else "0%")
+    st.write(f"**Quote Sent:** {quote_sent} ({(quote_sent / demo_completed * 100):.2f}%)" if demo_completed > 0 else "0%")
+    st.write(f"**Won Deals:** {won} ({(won / quote_sent * 100):.2f}%)" if quote_sent > 0 else "0%")
+
+    # Show raw data for selected user
+    if st.checkbox("Show Raw Data"):
+        st.dataframe(df_user)
+
+else:
+    st.warning("⚠ Please upload a CSV file to proceed.")
+    
+    
